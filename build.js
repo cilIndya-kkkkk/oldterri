@@ -51,3 +51,7 @@ for (const [search, replacement] of patches) {
 const outPath = path.join(outDir, 'latest.js');
 fs.writeFileSync(outPath, out);
 console.log(`Wrote ${outPath} (${Buffer.byteLength(out)} bytes)`);
+
+// Copy the game page into dist so Pages can serve a playable build.
+fs.copyFileSync(path.join(__dirname, 'index.html'), path.join(outDir, 'index.html'));
+console.log(`Wrote ${path.join(outDir, 'index.html')}`);
