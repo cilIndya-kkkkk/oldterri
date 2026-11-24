@@ -7,7 +7,7 @@ import path from 'path';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const gamePath = path.join(__dirname, 'game', 'latest.js');
-const outDir = path.join(__dirname, 'dist');
+const outDir = path.join(__dirname, 'docs');
 
 const script = fs.readFileSync(gamePath, 'utf8');
 
