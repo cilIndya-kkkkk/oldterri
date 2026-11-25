@@ -11,31 +11,17 @@ const outDir = path.join(__dirname, 'docs');
 
 const script = fs.readFileSync(gamePath, 'utf8');
 
-// Shim injected before the game: the game reads `window.turnstile` and calls
-// `.render(el, opts)`, which must invoke `opts.callback(token)`. On old
-// browsers Cloudflare's Turnstile script may not load, so we provide a shim
-// that resolves immediately. The token is a placeholder; if the game server
-// rejects it we need a real Turnstile run (invisible mode) or the 16-box path.
-const turnstileShim =
-  `(function(){` +
-  `if(!window.turnstile){` +
-  `  var fakeToken = "__oldterri_turnstile_placeholder__";` +
-  `  window.turnstile = {` +
-  `    render: function(el, opts){` +
-  `      if(opts && typeof opts.callback === "function"){` +
-  `        setTimeout(function(){ opts.callback(fakeToken); }, 0);` +
-  `      }` +
-  `      return "oldterri-widget";` +
-  `    },` +
-  `    remove: function(){},` +
-  `    reset: function(){},` +
-  `    getResponse: function(){ return fakeToken; }` +
-  `  };` +
-  `}` +
-  `})();`;
-
+// The device has internet and the real Cloudflare Turnstile widget can load
+// (we saw it before). Do NOT shim `window.turnstile` — an injected fake object
+// shadows the real one and prevents a real token, which the server rejects.
+// Instead, let the real Turnstile run, but make it solve invisibly so no
+// manual interaction is needed on the old device.
 const patches = [
-  ['"use strict";    (function () {', turnstileShim + '"use strict";    (function () {']
+  // The original game uses "interaction-only", which only issues a challenge
+  // on user interaction and may never fire a real token. "execute" makes
+  // Cloudflare solve the challenge in the background and call callback() with
+  // a real, server-valid token.
+  ['appearance:"interaction-only"', 'appearance:"execute"']
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
