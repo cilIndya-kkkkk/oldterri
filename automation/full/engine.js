@@ -76,6 +76,10 @@
         openingAutomationTickOffset: "0"
       };
       _settings = null;
+      try {
+        window.__fxAutoGetSettings = getSettings;
+      } catch (e) {
+      }
     }
   });
 

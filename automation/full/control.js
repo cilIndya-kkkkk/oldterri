@@ -1,48 +1,71 @@
-/* Minimal auto on/off toggle. Injected BEFORE the game IIFE (after the engine
-   bundle). Talks to the engine through its public methods, which persist to
-   localStorage (fx_auto_settings), so the state survives reloads and the button
-   reflects the engine's actual state via getAutoAttackMode(). ES5 (iOS 12). */
+/* Auto on/off controls. Injected BEFORE the game IIFE (after the engine bundle).
+   Three independent toggles, each calling the engine's public methods (which
+   persist to localStorage fx_auto_settings). ES5 (iOS 12). */
 (function () {
   if (typeof window === "undefined") return;
-  var BTN_ID = "fxAutoBtn";
+  var CONTAINER_ID = "fxAutoControls";
   function engine() { return (window.__fx && window.__fx.openingAutomation) || null; }
-  function isOn() {
-    var a = engine();
-    if (!a) return true;
-    try { return a.getAutoAttackMode() !== "off"; } catch (e) { return true; }
+  function settings() {
+    if (typeof window.__fxAutoGetSettings === "function") {
+      try { return window.__fxAutoGetSettings() || {}; } catch (e) {}
+    }
+    return {};
   }
-  function setOn(on) {
+  // read current state
+  function state() {
     var a = engine();
-    if (!a) return;
-    try {
-      if (on) {
-        a.setOpeningAutomationEnabled(true);
-        a.setAutoAttackMode("v20reserve");
-      } else {
-        a.setOpeningAutomationEnabled(false);
-        a.setAutoAttackMode("off");
-      }
-    } catch (e) {}
+    var auto = true, opening = true, inf = true;
+    if (a) { try { auto = a.getAutoAttackMode() !== "off"; } catch (e) {} }
+    var s = settings();
+    if (s.openingAutomationEnabled === false) opening = false;
+    if (s.infiniteExpansionEnabled === false) inf = false;
+    return { auto: auto, opening: opening, inf: inf };
   }
-  function makeButton() {
+  function setAuto(on) { var a = engine(); if (!a) return; try { a.setAutoAttackMode(on ? "v20reserve" : "off"); } catch (e) {} }
+  function setOpening(on) { var a = engine(); if (!a) return; try { a.setOpeningAutomationEnabled(on); } catch (e) {} }
+  function setInf(on) { var a = engine(); if (!a) return; try { a.setInfiniteExpansionEnabled(on); } catch (e) {} }
+  function setAll(on) { var a = engine(); if (!a) return; try { a.setAllAutomationEnabled(on); } catch (e) {} }
+
+  function makeButton(label, id, on) {
     var b = document.createElement("div");
-    b.id = BTN_ID;
-    b.style.cssText = "position:fixed;bottom:8px;right:8px;z-index:999999;padding:6px 10px;background:rgba(0,0,0,0.7);color:#fff;font:12px sans-serif;border-radius:4px;cursor:pointer;user-select:none;-webkit-user-select:none;";
-    b.onclick = function () { setOn(!isOn()); refresh(); };
-    document.body.appendChild(b);
+    b.id = id;
+    b.style.cssText = "padding:5px 10px;margin:2px 0;background:rgba(0,0,0,0.7);color:#fff;font:12px sans-serif;border-radius:4px;cursor:pointer;user-select:none;-webkit-user-select:none;text-align:center;";
+    b.textContent = label + ": " + (on ? "ON" : "OFF");
+    b.style.color = on ? "#0f0" : "#f66";
     return b;
   }
-  function refresh() {
-    var b = document.getElementById(BTN_ID);
+  function paint(id, label, on) {
+    var b = document.getElementById(id);
     if (!b) return;
-    var on = isOn();
-    b.textContent = on ? "Auto: ON" : "Auto: OFF";
+    b.textContent = label + ": " + (on ? "ON" : "OFF");
     b.style.color = on ? "#0f0" : "#f66";
+  }
+  function build() {
+    var st = state();
+    var c = document.createElement("div");
+    c.id = CONTAINER_ID;
+    c.style.cssText = "position:fixed;bottom:8px;right:8px;z-index:999999;";
+    var bAll = makeButton("Auto", "fxAutoBtn", st.auto);
+    bAll.onclick = function () { setAll(!state().auto); refresh(); };
+    var bOp = makeButton("Opening", "fxOpeningBtn", st.opening);
+    bOp.onclick = function () { setOpening(!state().opening); refresh(); };
+    var bInf = makeButton("Inf", "fxInfBtn", st.inf);
+    bInf.onclick = function () { setInf(!state().inf); refresh(); };
+    c.appendChild(bAll);
+    c.appendChild(bOp);
+    c.appendChild(bInf);
+    document.body.appendChild(c);
+  }
+  function refresh() {
+    var st = state();
+    paint("fxAutoBtn", "Auto", st.auto);
+    paint("fxOpeningBtn", "Opening", st.opening);
+    paint("fxInfBtn", "Inf", st.inf);
   }
   function attach() {
     try {
       if (document.body) {
-        if (!document.getElementById(BTN_ID)) makeButton();
+        if (!document.getElementById(CONTAINER_ID)) build();
         refresh();
       }
     } catch (e) {}
