@@ -11,15 +11,21 @@ const outDir = path.join(__dirname, 'docs');
 
 const script = fs.readFileSync(gamePath, 'utf8');
 
-// Lean automation (see automation/). auto.js runs BEFORE the game and sets up
-// window.__fx + the engine/UI. ingame.js is injected INSIDE the game (at
-// `function dN`) and exposes the game internals on window.__fx.game.
-const autoPrelude = fs.readFileSync(path.join(__dirname, 'automation', 'auto.js'), 'utf8');
-const ingameBlock = fs.readFileSync(path.join(__dirname, 'automation', 'ingame.js'), 'utf8');
+// Full automation (port of goodclient's openingAutomation engine). These two
+// artifacts are pre-built to ES5 (iOS 12 compatible) by automation/full/build:
+//   - engine.js: the bundled engine (window.__fx.openingAutomation + deps),
+//     injected BEFORE the game IIFE.
+//   - injectionA.js: the in-game raw-method bindings, injected at `function dN`.
+// A third tiny block (windowAEGetter) exposes the game object so the engine's
+// getVar("gameState") -> window.aE.a3z works despite the IIFE not being stripped.
+const engineBundle = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'engine.js'), 'utf8');
+const injectionA = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'injectionA.js'), 'utf8');
+const windowAEGetter =
+  `if(typeof Object.defineProperty==="function"){try{Object.defineProperty(window,"aE",{get:function(){return typeof aE!=="undefined"?aE:null;},configurable:true});}catch(__ge){}}`;
 
-// Build-time guard: if the game is re-obfuscated (a new release), these raw
-// access strings move and the injected blocks would silently no-op. Fail the
-// build loudly instead.
+// Build-time guards: if the game is re-obfuscated (a new release), these raw
+// access strings / anchors move and the injected blocks would silently no-op.
+// Fail the build loudly instead.
 const rawChecks = [
   ['bB.iC.iJ', 'GameCommandSender.sendAttack'],
   ['aE.fV', 'playerId'],
@@ -27,6 +33,8 @@ const rawChecks = [
   ['ah.hZ', 'playerTerritories'],
   ['bV.aME', 'mapIsRendered'],
   ['aE.hu', 'gIsReplay'],
+  ['function dN(){var hq=0;var hr=0;', 'injection-A anchor (dN)'],
+  ['this.eq=function(){this.a49.alS++;', 'injection-B anchor (tick hook)'],
 ];
 for (const [pat, name] of rawChecks) {
   if (!script.includes(pat))
@@ -72,10 +80,14 @@ const patches = [
   // Mirror the game's console logs to an on-screen box (for the console-less
   // iOS 12 device), and load the automation engine. Prepended before the game's
   // IIFE so window.__fx exists before the in-game block runs.
-  ['"use strict";    (function () {', consoleMirror + autoPrelude + '"use strict";    (function () {'],
-  // Inject the in-game automation block at the start of `function dN` (the
-  // mouse/input action manager constructor), exposing the game internals.
-  ['function dN(){var hq=0;var hr=0;', 'function dN(){' + ingameBlock + 'var hq=0;var hr=0;'],
+  ['"use strict";    (function () {', consoleMirror + engineBundle + '"use strict";    (function () {'],
+  // Inject the in-game automation bindings at the start of `function dN` (the
+  // mouse/input action manager constructor), exposing the game internals. The
+  // window.aE getter lets the engine's getVar("gameState") work (IIFE not stripped).
+  ['function dN(){var hq=0;var hr=0;', 'function dN(){' + windowAEGetter + injectionA + 'var hq=0;var hr=0;'],
+  // Drive the engine each game tick by hooking the tick counter increment.
+  ['this.eq=function(){this.a49.alS++;',
+   'this.eq=function(){this.a49.alS++;try{__fx.openingAutomation.onTick(this.a49.alS);__fx.openingAutomation.onTickAutoAttack(this.a49.alS);}catch(__fxTickError){if(!window.__fxTickError){window.__fxTickError=__fxTickError;console.error("[oldterri] automation tick",__fxTickError);}}'],
   // The original game uses "interaction-only", which only issues a challenge
   // on user interaction. "execute" makes Cloudflare solve in the background.
   ['appearance:"interaction-only"', 'appearance:"execute"'],
