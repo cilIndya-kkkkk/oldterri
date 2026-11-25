@@ -42,7 +42,14 @@ const patches = [
   ['"use strict";    (function () {', consoleMirror + '"use strict";    (function () {'],
   // The original game uses "interaction-only", which only issues a challenge
   // on user interaction. "execute" makes Cloudflare solve in the background.
-  ['appearance:"interaction-only"', 'appearance:"execute"']
+  ['appearance:"interaction-only"', 'appearance:"execute"'],
+  // On the old iOS 12 device Cloudflare's Turnstile widget never completes, so
+  // no verification UI ever appears and the server kicks the player. The game
+  // has a native 16-tile captcha (`ew()`) that is iOS-12-compatible and accepted
+  // by the server as an alternative. It is suppressed while Turnstile holds the
+  // slot: `bX.ei()` reads a server flag (buffer byte 160) and the 16-box guard
+  // `if (bX.ei()) return;` skips it. Force `ei()` to 0 so the 16-box triggers.
+  ['this.ei=function(){return bm.buffer.data[160].value;}', 'this.ei=function(){return 0;}']
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
