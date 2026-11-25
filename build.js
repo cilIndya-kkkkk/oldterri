@@ -11,16 +11,37 @@ const outDir = path.join(__dirname, 'docs');
 
 const script = fs.readFileSync(gamePath, 'utf8');
 
-// The device has internet and the real Cloudflare Turnstile widget can load
-// (we saw it before). Do NOT shim `window.turnstile` — an injected fake object
-// shadows the real one and prevents a real token, which the server rejects.
-// Instead, let the real Turnstile run, but make it solve invisibly so no
-// manual interaction is needed on the old device.
+// The real Cloudflare Turnstile widget runs on modern devices (it's the game's
+// own code), but on the iOS 12 device it doesn't appear at all. The likely
+// cause is that Cloudflare's script uses JS syntax iOS 12 can't parse, so
+// `window.turnstile` stays undefined and the widget never renders. No
+// appearance/shims fix that, so we need to SEE what the game logs on the device
+// — but the old device has no console. This overlay mirrors console.log to an
+// on-screen box so the user can report which stage fails. Written in ES5 so it
+// runs on iOS 12.
+const consoleMirror =
+  `(function(){` +
+  `var box=document.createElement("div");` +
+  `box.id="fxDbg";` +
+  `box.style.cssText="position:fixed;top:4px;left:4px;z-index:999999;max-width:60vw;max-height:50vh;overflow:auto;background:rgba(0,0,0,0.75);color:#0f0;font:11px monospace;white-space:pre-wrap;padding:4px;pointer-events:none;";` +
+  `var logs=[];` +
+  `function show(s){try{logs.push(s);if(logs.length>50){logs.shift();}box.textContent=logs.join("\\n");}catch(e){}}` +
+  `if(window.console){` +
+  `  var orig=window.console.log?window.console.log.bind(window.console):function(){};` +
+  `  window.console.log=function(){try{orig.apply(window.console,arguments);}catch(e){}show("[log] "+Array.prototype.slice.call(arguments).join(" "));};` +
+  `}` +
+  `show("fxdbg ready");` +
+  `function attach(){try{if(box.parentNode!==document.body){document.body.appendChild(box);}}catch(e){}}` +
+  `attach();` +
+  `setInterval(attach,1000);` +
+  `})();`;
+
 const patches = [
+  // Mirror the game's console logs to an on-screen box (for the console-less
+  // iOS 12 device). Prepended before the game's IIFE.
+  ['"use strict";    (function () {', consoleMirror + '"use strict";    (function () {'],
   // The original game uses "interaction-only", which only issues a challenge
-  // on user interaction and may never fire a real token. "execute" makes
-  // Cloudflare solve the challenge in the background and call callback() with
-  // a real, server-valid token.
+  // on user interaction. "execute" makes Cloudflare solve in the background.
   ['appearance:"interaction-only"', 'appearance:"execute"']
 ];
 
