@@ -11,21 +11,30 @@ const outDir = path.join(__dirname, 'docs');
 
 const script = fs.readFileSync(gamePath, 'utf8');
 
-// The real Cloudflare Turnstile widget runs on modern devices (it's the game's
-// own code), but on the iOS 12 device it doesn't appear at all. The likely
-// cause is that Cloudflare's script uses JS syntax iOS 12 can't parse, so
-// `window.turnstile` stays undefined and the widget never renders. No
-// appearance/shims fix that, so we need to SEE what the game logs on the device
-// — but the old device has no console. This overlay mirrors console.log to an
-// on-screen box so the user can report which stage fails. Written in ES5 so it
-// runs on iOS 12.
+// The old device has no console, so this overlay mirrors console.log to an
+// on-screen box so the user can report what the game is doing. Written in ES5
+// so it runs on iOS 12. A small button collapses/expands it so it can be kept
+// out of the way.
 const consoleMirror =
   `(function(){` +
   `var box=document.createElement("div");` +
   `box.id="fxDbg";` +
-  `box.style.cssText="position:fixed;top:4px;left:4px;z-index:999999;max-width:60vw;max-height:50vh;overflow:auto;background:rgba(0,0,0,0.75);color:#0f0;font:11px monospace;white-space:pre-wrap;padding:4px;pointer-events:none;";` +
-  `var logs=[];` +
-  `function show(s){try{logs.push(s);if(logs.length>50){logs.shift();}box.textContent=logs.join("\\n");}catch(e){}}` +
+  `box.style.cssText="position:fixed;top:4px;left:4px;z-index:999999;max-width:60vw;max-height:50vh;overflow:auto;background:rgba(0,0,0,0.75);color:#0f0;font:11px monospace;padding:2px;pointer-events:auto;";` +
+  `var logs=[];var hidden=false;` +
+  `var head=document.createElement("div");` +
+  `head.style.cssText="font:12px sans-serif;text-align:right;cursor:pointer;color:#fff;user-select:none;-webkit-user-select:none;";` +
+  `head.textContent="[x]";` +
+  `var content=document.createElement("div");` +
+  `content.style.cssText="white-space:pre-wrap;";` +
+  `box.appendChild(head);box.appendChild(content);` +
+  `function show(s){try{logs.push(s);if(logs.length>50){logs.shift();}content.textContent=logs.join("\\n");}catch(e){}}` +
+  `head.onclick=function(){` +
+  `  hidden=!hidden;` +
+  `  content.style.display=hidden?"none":"";` +
+  `  box.style.maxHeight=hidden?"20px":"50vh";` +
+  `  box.style.overflow=hidden?"hidden":"auto";` +
+  `  head.textContent=hidden?"[show]":"[x]";` +
+  `};` +
   `if(window.console){` +
   `  var orig=window.console.log?window.console.log.bind(window.console):function(){};` +
   `  window.console.log=function(){try{orig.apply(window.console,arguments);}catch(e){}show("[log] "+Array.prototype.slice.call(arguments).join(" "));};` +
@@ -49,7 +58,11 @@ const patches = [
   // by the server as an alternative. It is suppressed while Turnstile holds the
   // slot: `bX.ei()` reads a server flag (buffer byte 160) and the 16-box guard
   // `if (bX.ei()) return;` skips it. Force `ei()` to 0 so the 16-box triggers.
-  ['this.ei=function(){return bm.buffer.data[160].value;}', 'this.ei=function(){return 0;}']
+  ['this.ei=function(){return bm.buffer.data[160].value;}', 'this.ei=function(){return 0;}'],
+  // We use the native 16-box now, so keep Cloudflare's Turnstile from loading at
+  // all (it hangs on iOS 12 and even shows on newer devices). Making the guard
+  // always-true makes `dv()` return early before injecting the Cloudflare script.
+  ['this.dv=function(){if(m.e8||(!m.aA&&!m.eG)){', 'this.dv=function(){if(true){']
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
