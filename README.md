@@ -15,10 +15,13 @@ No dependencies, tiny output — suitable for serving via GitHub Pages.
 
 ## Current state
 
-- First-attempt bypass: a `window.turnstile` shim that resolves the token
-  callback immediately. This only works if the game server accepts the
-  placeholder token; otherwise we need a real Turnstile run (invisible mode) or
-  the 16-tile captcha auto-solve path.
+- The device has internet and the real Cloudflare Turnstile widget can load. We
+  therefore **do not shim** `window.turnstile` (a fake object shadows the real
+  one, so the server rejects the placeholder token).
+- Instead the only patch is `appearance: "interaction-only"` → `"execute"`, so
+  Cloudflare solves the challenge invisibly and `callback()` returns a real,
+  server-valid token. No manual interaction needed on the old device.
+- Fallback (not implemented): the 16-tile captcha auto-solve path.
 
 ## Build
 
