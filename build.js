@@ -20,6 +20,7 @@ const script = fs.readFileSync(gamePath, 'utf8');
 // getVar("gameState") -> window.aE.a3z works despite the IIFE not being stripped.
 const engineBundle = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'engine.js'), 'utf8');
 const injectionA = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'injectionA.js'), 'utf8');
+const controlBundle = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'control.js'), 'utf8');
 const windowAEGetter =
   `if(typeof Object.defineProperty==="function"){try{Object.defineProperty(window,"aE",{get:function(){return typeof aE!=="undefined"?aE:null;},configurable:true});}catch(__ge){}}`;
 
@@ -80,7 +81,7 @@ const patches = [
   // Mirror the game's console logs to an on-screen box (for the console-less
   // iOS 12 device), and load the automation engine. Prepended before the game's
   // IIFE so window.__fx exists before the in-game block runs.
-  ['"use strict";    (function () {', consoleMirror + engineBundle + '"use strict";    (function () {'],
+  ['"use strict";    (function () {', consoleMirror + engineBundle + controlBundle + '"use strict";    (function () {'],
   // Inject the in-game automation bindings at the start of `function dN` (the
   // mouse/input action manager constructor), exposing the game internals. The
   // window.aE getter lets the engine's getVar("gameState") work (IIFE not stripped).
