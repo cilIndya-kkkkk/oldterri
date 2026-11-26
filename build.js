@@ -26,14 +26,18 @@ const openingControlBundle = fs.readFileSync(path.join(__dirname, 'automation', 
 // Researched opening strategies from ~/ttresearch/opening/data/best/*.json.
 // Their `attacks` are arrays [cycle, exactTick, percent]; the engine needs
 // objects {cycle, exactTick, percent}. Convert and embed as window.__fxOpeningStrategies.
+// Only strategies for land >= 2500 are kept (user preference for longer games).
 const strategiesDir = '/data/data/com.termux/files/home/ttresearch/opening/data/best';
+const MIN_OPENING_LAND = 2500;
 let strategiesData = 'window.__fxOpeningStrategies={};';
 try {
   const files = fs.readdirSync(strategiesDir).filter((f) => /^best-.*\.json$/.test(f)).sort();
   const obj = {};
+  let skipped = 0;
   for (const f of files) {
     const raw = JSON.parse(fs.readFileSync(path.join(strategiesDir, f), 'utf8'));
     if (!raw || !raw.strategy) continue;
+    if (Number(raw.land) < MIN_OPENING_LAND) { skipped++; continue; }
     const strat = raw.strategy;
     if (strat.attacks) {
       strat.attacks = strat.attacks.map((a) => ({ cycle: Number(a[0]), exactTick: Number(a[1]), percent: Number(a[2]) }));
@@ -41,7 +45,7 @@ try {
     obj[f.replace('.json', '')] = strat;
   }
   strategiesData = 'window.__fxOpeningStrategies=' + JSON.stringify(obj) + ';';
-  console.log('embedded ' + Object.keys(obj).length + ' researched strategies');
+  console.log('embedded ' + Object.keys(obj).length + ' researched strategies (>= ' + MIN_OPENING_LAND + ' land, skipped ' + skipped + ')');
 } catch (e) {
   console.warn('no researched strategies available (' + e.message + ')');
 }
