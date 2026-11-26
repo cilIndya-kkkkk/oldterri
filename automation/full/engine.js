@@ -73,11 +73,15 @@
         botSpendPercent: "100",
         infiniteExpansionEnabled: true,
         openingDynamicCompensationEnabled: true,
-        openingAutomationTickOffset: "0"
+        openingAutomationTickOffset: "-9.5"
       };
       _settings = null;
       try {
         window.__fxAutoGetSettings = getSettings;
+      } catch (e) {
+      }
+      try {
+        window.__fxAutoPersist = persistSettings;
       } catch (e) {
       }
     }
