@@ -50,20 +50,20 @@ try {
   console.warn('no researched strategies available (' + e.message + ')');
 }
 const windowAEGetter =
-  `if(typeof Object.defineProperty==="function"){try{Object.defineProperty(window,"aE",{get:function(){return typeof aE!=="undefined"?aE:null;},configurable:true});}catch(__ge){}}`;
+  `if(typeof Object.defineProperty==="function"){try{Object.defineProperty(window,"aE",{get:function(){return typeof aE!=="undefined"?aE:null;},configurable:true});Object.defineProperty(window,"ah",{get:function(){return typeof ah!=="undefined"?ah:null;},configurable:true});}catch(__ge){}}`;
 
 // Build-time guards: if the game is re-obfuscated (a new release), these raw
 // access strings / anchors move and the injected blocks would silently no-op.
 // Fail the build loudly instead.
 const rawChecks = [
-  ['bB.iC.iJ', 'GameCommandSender.sendAttack'],
+  ['bB.iD.iK', 'GameCommandSender.sendAttack'],
+  ['bB.iD.rx', 'GameCommandSender.sendSupport'],
   ['aE.fV', 'playerId'],
   ['ah.hn', 'playerBalances'],
   ['ah.hZ', 'playerTerritories'],
-  ['bV.aME', 'mapIsRendered'],
   ['aE.hu', 'gIsReplay'],
   ['function dN(){var hq=0;var hr=0;', 'injection-A anchor (dN)'],
-  ['this.eq=function(){this.a49.alS++;', 'injection-B anchor (tick hook)'],
+  ['this.eq=function(){this.a4N.an9++;', 'injection-B anchor (tick hook)'],
 ];
 for (const [pat, name] of rawChecks) {
   if (!script.includes(pat))
@@ -115,8 +115,8 @@ const patches = [
   // window.aE getter lets the engine's getVar("gameState") work (IIFE not stripped).
   ['function dN(){var hq=0;var hr=0;', 'function dN(){' + windowAEGetter + injectionA + 'var hq=0;var hr=0;'],
   // Drive the engine each game tick by hooking the tick counter increment.
-  ['this.eq=function(){this.a49.alS++;',
-   'this.eq=function(){this.a49.alS++;try{__fx.openingAutomation.onTick(this.a49.alS);__fx.openingAutomation.onTickAutoAttack(this.a49.alS);}catch(__fxTickError){if(!window.__fxTickError){window.__fxTickError=__fxTickError;console.error("[oldterri] automation tick",__fxTickError);}}'],
+  ['this.eq=function(){this.a4N.an9++;',
+   'this.eq=function(){this.a4N.an9++;try{__fx.openingAutomation.onTick(this.a4N.an9);__fx.openingAutomation.onTickAutoAttack(this.a4N.an9);}catch(__fxTickError){if(!window.__fxTickError){window.__fxTickError=__fxTickError;console.error("[oldterri] automation tick",__fxTickError);}}'],
   // The original game uses "interaction-only", which only issues a challenge
   // on user interaction. "execute" makes Cloudflare solve in the background.
   ['appearance:"interaction-only"', 'appearance:"execute"'],

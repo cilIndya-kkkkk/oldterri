@@ -91,7 +91,13 @@
   function getVar(varName) {
     if (varName === "gameState") {
       var g = typeof window !== "undefined" ? window.aE : null;
-      return g && typeof g.a3z !== "undefined" ? g.a3z : null;
+      var p = g ? g.fV : null;
+      if (p == null || p < 0) return 0;
+      var pd = typeof window !== "undefined" ? window.ah : null;
+      if (!pd) return 0;
+      var land = pd.hZ && pd.hZ[p] || 0;
+      var troops = pd.hn && pd.hn[p] || 0;
+      return land > 0 || troops > 0 ? 2 : 0;
     }
     return null;
   }

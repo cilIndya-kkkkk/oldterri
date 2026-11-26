@@ -165,8 +165,8 @@ __fx.openingAutomation.attackFreeLand = () => {
   var freeLandTarget = 512;
   var percent = __fx.keybindFunctions.getAttackPercentage();
   var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
-  if (typeof bB !== "undefined" && bB.iC && typeof bB.iC.iJ === "function") {
-    bB.iC.iJ(sliderValue, freeLandTarget);
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.iK === "function") {
+    bB.iD.iK(sliderValue, freeLandTarget);
     return true;
   }
   return false;
@@ -178,8 +178,8 @@ __fx.openingAutomation.attackFreeLandWithPercent = (percent) => {
   var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
   __fx.keybindFunctions.setAbsolute(percent);
   __fx.keybindFunctions.repaintAttackPercentageBar();
-  if (typeof bB !== "undefined" && bB.iC && typeof bB.iC.iJ === "function") {
-    bB.iC.iJ(sliderValue, freeLandTarget);
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.iK === "function") {
+    bB.iD.iK(sliderValue, freeLandTarget);
     return true;
   }
   return false;
@@ -216,8 +216,8 @@ __fx.openingAutomation.attackPlayer = (target) => {
   __fx.keybindFunctions.setAbsolute(percent);
   __fx.keybindFunctions.repaintAttackPercentageBar();
   var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
-  if (typeof bB !== "undefined" && bB.iC && typeof bB.iC.iJ === "function") {
-    bB.iC.iJ(sliderValue, target);
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.iK === "function") {
+    bB.iD.iK(sliderValue, target);
     return true;
   }
   return false;
@@ -253,8 +253,8 @@ __fx.openingAutomation.sendSupport = (target, percent) => {
   if (!isFinite(percent)) percent = 0.1;
   percent = Math.max(0, Math.min(1, percent));
   var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
-  if (typeof bB !== "undefined" && bB.iC && typeof bB.iC.rx === "function") {
-    bB.iC.rx(sliderValue, target);
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.rx === "function") {
+    bB.iD.rx(sliderValue, target);
     return true;
   }
   return false;
@@ -274,8 +274,8 @@ __fx.openingAutomation.attackPlayerTarget = (target, percent) => {
   if (!isFinite(percent)) percent = 0.09;
   percent = Math.max(0, Math.min(1, percent));
   var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
-  if (typeof bB !== "undefined" && bB.iC && typeof bB.iC.iJ === "function") {
-    bB.iC.iJ(sliderValue, Number(target));
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.iK === "function") {
+    bB.iD.iK(sliderValue, Number(target));
     return true;
   }
   return false;
@@ -320,8 +320,8 @@ __fx.botMap.launchShipAt = function(clientX, clientY, percent) {
 __fx.openingAutomation.cancelPlayerAttack = (target) => {
   if (aE.hu) return false;
   if (target < 0 || target >= aE.a14) return false;
-  if (typeof bB !== "undefined" && bB.iC && typeof bB.iC.sD === "function") {
-    bB.iC.sD(target);
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.sI === "function") {
+    bB.iD.sI(target);
     return true;
   }
   return false;
@@ -329,8 +329,8 @@ __fx.openingAutomation.cancelPlayerAttack = (target) => {
 __fx.openingAutomation.cancelFreeLandAttack = () => {
   if (aE.hu) return false;
   var freeLandTarget = 512;
-  if (typeof bB !== "undefined" && bB.iC && typeof bB.iC.sD === "function") {
-    bB.iC.sD(freeLandTarget);
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.sI === "function") {
+    bB.iD.sI(freeLandTarget);
     return true;
   }
   return false;

@@ -102,18 +102,22 @@
     if (off) off.value = st.openingAutomationTickOffset || "-9.5";
     if (ta) ta.value = st.openingAutomationStrategy || "";
   }
+  var wasVisible = false;
   function refresh() {
     var t = document.getElementById(TOGGLE_ID);
     if (t) t.style.color = visible ? "#0f0" : "#fff";
     if (visible) {
       if (!document.getElementById(PANEL_ID)) { makePanel(); }
-      fill();
+      // Only fill the inputs when the panel first opens (transition), NOT on the
+      // periodic 500ms refresh, otherwise it clobbers the user's edits.
+      if (!wasVisible) fill();
       var p = document.getElementById(PANEL_ID);
       if (p) p.style.display = "";
     } else {
       var p = document.getElementById(PANEL_ID);
       if (p) p.style.display = "none";
     }
+    wasVisible = visible;
   }
   function attach() {
     try {
