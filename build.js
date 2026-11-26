@@ -22,6 +22,29 @@ const engineBundle = fs.readFileSync(path.join(__dirname, 'automation', 'full', 
 const injectionA = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'injectionA.js'), 'utf8');
 const controlBundle = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'control.js'), 'utf8');
 const openingControlBundle = fs.readFileSync(path.join(__dirname, 'automation', 'full', 'openingControl.js'), 'utf8');
+
+// Researched opening strategies from ~/ttresearch/opening/data/best/*.json.
+// Their `attacks` are arrays [cycle, exactTick, percent]; the engine needs
+// objects {cycle, exactTick, percent}. Convert and embed as window.__fxOpeningStrategies.
+const strategiesDir = '/data/data/com.termux/files/home/ttresearch/opening/data/best';
+let strategiesData = 'window.__fxOpeningStrategies={};';
+try {
+  const files = fs.readdirSync(strategiesDir).filter((f) => /^best-.*\.json$/.test(f)).sort();
+  const obj = {};
+  for (const f of files) {
+    const raw = JSON.parse(fs.readFileSync(path.join(strategiesDir, f), 'utf8'));
+    if (!raw || !raw.strategy) continue;
+    const strat = raw.strategy;
+    if (strat.attacks) {
+      strat.attacks = strat.attacks.map((a) => ({ cycle: Number(a[0]), exactTick: Number(a[1]), percent: Number(a[2]) }));
+    }
+    obj[f.replace('.json', '')] = strat;
+  }
+  strategiesData = 'window.__fxOpeningStrategies=' + JSON.stringify(obj) + ';';
+  console.log('embedded ' + Object.keys(obj).length + ' researched strategies');
+} catch (e) {
+  console.warn('no researched strategies available (' + e.message + ')');
+}
 const windowAEGetter =
   `if(typeof Object.defineProperty==="function"){try{Object.defineProperty(window,"aE",{get:function(){return typeof aE!=="undefined"?aE:null;},configurable:true});}catch(__ge){}}`;
 
@@ -82,7 +105,7 @@ const patches = [
   // Mirror the game's console logs to an on-screen box (for the console-less
   // iOS 12 device), and load the automation engine. Prepended before the game's
   // IIFE so window.__fx exists before the in-game block runs.
-  ['"use strict";    (function () {', consoleMirror + engineBundle + controlBundle + openingControlBundle + '"use strict";    (function () {'],
+  ['"use strict";    (function () {', consoleMirror + engineBundle + controlBundle + openingControlBundle + strategiesData + '"use strict";    (function () {'],
   // Inject the in-game automation bindings at the start of `function dN` (the
   // mouse/input action manager constructor), exposing the game internals. The
   // window.aE getter lets the engine's getVar("gameState") work (IIFE not stripped).

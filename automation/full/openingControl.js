@@ -1,6 +1,7 @@
 /* Custom opening strategy + tick offset panel. Injected BEFORE the game IIFE.
    Edits settings.openingAutomationStrategy (JSON) and openingAutomationTickOffset
    via the exposed settings object, and persists. Empty strategy = engine default.
+   A dropdown lists the researched strategies embedded as window.__fxOpeningStrategies.
    ES5 (iOS 12). */
 (function () {
   if (typeof window === "undefined") return;
@@ -32,17 +33,38 @@
     var p = document.createElement("div");
     p.id = PANEL_ID;
     p.style.cssText = "position:fixed;bottom:48px;left:8px;z-index:999999;width:min(85vw,300px);max-height:60vh;overflow:auto;background:rgba(0,0,0,0.85);color:#eee;font:12px sans-serif;padding:8px;border-radius:4px;";
+
     var offL = document.createElement("div");
     offL.textContent = "Tick offset (100 ticks/cycle):";
     var off = document.createElement("input");
     off.type = "number";
     off.step = "0.1";
     off.style.cssText = "width:100%;box-sizing:border-box;margin:2px 0 8px;";
+
     var stratL = document.createElement("div");
     stratL.textContent = "Opening strategy JSON (empty = default):";
     var ta = document.createElement("textarea");
     ta.spellcheck = false;
     ta.style.cssText = "width:100%;box-sizing:border-box;height:110px;margin:2px 0 8px;font:11px monospace;";
+
+    var presets = (typeof window.__fxOpeningStrategies === "object" && window.__fxOpeningStrategies) ? window.__fxOpeningStrategies : {};
+    var presetSel = document.createElement("select");
+    presetSel.style.cssText = "width:100%;box-sizing:border-box;margin:2px 0 8px;";
+    var ph = document.createElement("option");
+    ph.value = "";
+    ph.textContent = "-- choose a researched strategy --";
+    presetSel.appendChild(ph);
+    for (var key in presets) {
+      var o = document.createElement("option");
+      o.value = key;
+      o.textContent = key;
+      presetSel.appendChild(o);
+    }
+    presetSel.onchange = function () {
+      var key = presetSel.value;
+      if (key && presets[key]) ta.value = JSON.stringify(presets[key], null, 2);
+    };
+
     var apply = document.createElement("button");
     apply.textContent = "Apply";
     apply.style.cssText = "margin-right:6px;padding:3px 10px;";
@@ -63,8 +85,10 @@
     close.textContent = "Close";
     close.style.cssText = "padding:3px 10px;";
     close.onclick = function () { visible = false; refresh(); };
+
     p.appendChild(offL); p.appendChild(off);
     p.appendChild(stratL); p.appendChild(ta);
+    p.appendChild(presetSel);
     p.appendChild(apply); p.appendChild(close);
     document.body.appendChild(p);
     return p;
