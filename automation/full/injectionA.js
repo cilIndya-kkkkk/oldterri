@@ -7,7 +7,7 @@ __fx.gameUi = __fx.gameUi || {
     var hidden = Boolean(value);
     var controller = typeof bF !== "undefined" ? bF : null;
     try {
-      if (controller && typeof controller.a68 === "function") controller.a68(hidden);
+      if (controller && typeof controller.a6M === "function") controller.a6M(hidden);
     } catch (_error) {
     }
     var game = typeof aE !== "undefined" ? aE : null;
@@ -238,11 +238,11 @@ __fx.openingAutomation.getMaxSupportPercent = (target) => {
   if (!__fxCanSupportTarget(target)) return 0;
   var player = aE.fV;
   var support = bD.h7;
-  if (!support || typeof support.jL !== "function" || typeof support.sO !== "function") return 0;
+  if (!support || typeof support.jQ !== "function" || typeof support.sT !== "function") return 0;
   var best = -1;
   for (var sliderValue = 0; sliderValue < 1024; sliderValue++) {
-    var amount = support.jL(player, sliderValue);
-    if (support.sO(player, amount, Number(target))) best = sliderValue;
+    var amount = support.jQ(player, sliderValue);
+    if (support.sT(player, amount, Number(target))) best = sliderValue;
   }
   return best < 0 ? 0 : (best + 1) / 1024;
 };
@@ -253,8 +253,8 @@ __fx.openingAutomation.sendSupport = (target, percent) => {
   if (!isFinite(percent)) percent = 0.1;
   percent = Math.max(0, Math.min(1, percent));
   var sliderValue = Math.max(0, Math.min(1023, Math.round(percent * 1024 - 1)));
-  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.rx === "function") {
-    bB.iD.rx(sliderValue, target);
+  if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.s2 === "function") {
+    bB.iD.s2(sliderValue, target);
     return true;
   }
   return false;

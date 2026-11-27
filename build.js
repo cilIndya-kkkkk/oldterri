@@ -57,7 +57,11 @@ const windowAEGetter =
 // Fail the build loudly instead.
 const rawChecks = [
   ['bB.iD.iK', 'GameCommandSender.sendAttack'],
-  ['bB.iD.rx', 'GameCommandSender.sendSupport'],
+  ['bB.iD.s2', 'GameCommandSender.sendSupport'],
+  ['bB.iD.sI', 'GameCommandSender.cancelAttack'],
+  ['bD.h7.jQ', 'SupportMath.supportAmount'],
+  ['bD.h7.sT', 'SupportMath.supportCalc'],
+  ['bF.a6M', 'UI controller.setHidden'],
   ['aE.fV', 'playerId'],
   ['ah.hn', 'playerBalances'],
   ['ah.hZ', 'playerTerritories'],
