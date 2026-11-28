@@ -78,10 +78,13 @@ for (const [pat, name] of rawChecks) {
 
 // The old device has no console, so this overlay mirrors console.log to an
 // on-screen box so the user can report what the game is doing. Written in ES5
-// so it runs on iOS 12. A small button collapses/expands it so it can be kept
-// out of the way.
+// so it runs on iOS 12. It is now OPT-IN: it only activates when the URL has
+// ?debug=1. Otherwise it is a no-op — mirroring every log to the DOM box caused
+// layout thrashing / frame drops on the slow iOS 12 device (and may have blocked
+// the 16-box captcha from rendering). Keep it off for normal play.
 const consoleMirror =
   `(function(){` +
+  `if(!(window.location&&window.location.search&&/[?&]debug=1/.test(window.location.search))){return;}` +
   `var box=document.createElement("div");` +
   `box.id="fxDbg";` +
   `box.style.cssText="position:fixed;top:4px;left:4px;z-index:999999;max-width:60vw;max-height:50vh;overflow:auto;background:rgba(0,0,0,0.75);color:#0f0;font:11px monospace;padding:2px;pointer-events:auto;";` +
