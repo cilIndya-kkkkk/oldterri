@@ -7,12 +7,23 @@
 
 ## ★ 待办交接（下个对话接手）
 
-> 以下三件事都**未完成**。已附上目前发现和方向，避免重复踩坑。建议顺序：**C → A → B**。
+> 28 Nov 进展：**B 已打补丁待真机确认**，**C 已有初版工具待下次更新验证**，A 仍未修。下面保留原始发现与方向，避免重复踩坑。
 
-### C. 给 oldterri 加自动更新工具（未做）
-- 现状：oldterri **没有**自动更新工具，只有本文档。`~/goodupdate`、`~/srez_update` 是给 goodclient/srez 的，未适配 oldterri。
+### C. 给 oldterri 加自动更新工具（28 Nov 已做初版，待真机/下次更新验证）
+- 新工具在 `update/`（已 commit）：`update.py` + `hooks.json`（26 Nov 全量钩子，含 tick 计数器）+ 自带的 `derive_hooks.py` 副本（不再依赖易丢的 `/usr/tmp`）。
+- 用法：
+  ```bash
+  cd ~/oldterri
+  python3 update/update.py                          # dry run：抓新版 + 派生新名 + 打印 diff
+  python3 update/update.py --game-file /path/new.js # 用本地脚本
+  python3 update/update.py --apply                  # 写回 game/injectionA/build + 重 build + node --check
+  ```
+- 机制：token 对齐派生新名 → 全路径替换（`bB.iD.iK` 这种）→ 别名替换（`support.jL`/`controller.a68`/`__fxAd.fn`，靠初始化式识别别名）→ 写回 `automation/full/injectionA.js` 和 `build.js` 的 rawChecks/注入锚点。派生不出来的 hook 直接报错、不部分写入。
+- 已用合成改名脚本端到端 dry-run 验证：能正确改出 `bB.zZ.qQ`/`bD.h7.zz`/`bF.q9`/`a4N.zz9`，别名 `support.jQ→support.zz`、`controller.a6M→controller.q9` 也对。
+- 仍**需手工**的：`build.js` 里非 hook 锚点（`function dN`、`ei`/`dv` 验证补丁、16 框诊断块），工具会预先 WARNING 列出；build 本身也会 fail loudly。更新后仍需真机验证。
+- 旧记录（保留）：`~/goodupdate`、`~/srez_update` 是给 goodclient/srez 的，未适配 oldterri。
 - 已验证可用：`~/goodupdate/derive_hooks.py`（token 对齐）能解混淆名。26 Nov 适配时它抓出我手工漏掉的 **4 处**（sendSupport=s2、supportAmount=jQ、supportCalc=sT、setUiHidden=a6M）。**凡是改名的更新，必须用它交叉验证。**
-- 方向：搭 oldterri 的更新流程。难点是"新名怎么写回 injectionA.js/build.js"——名以各种访问形式出现（`bB.iD.iK` 直接路径、`support.jL`/`controller.a68` 经变量访问），不是简单键值。做法：跑 derive_hooks.py 得新旧名对照 → 按访问形式替换 injectionA.js + 更新 build.js 的 rawChecks 和注入锚点。
+- 历史难点（已由上面的工具解决大部分）：名以各种访问形式出现（`bB.iD.iK` 直接路径、`support.jL`/`controller.a68` 经变量访问），不是简单键值。
 - 相关构建脚本（dev-side，`/usr/tmp` 可能被清，需时可重建）：`/data/data/com.termux/files/usr/tmp/opencode/autobuild/`（stub_settings.js、stub_gameInterface.js、entry.js、build_engine.mjs 用 esbuild 打引擎；extract_injection.mjs 从 goodclient 补丁提取注入A）。
 - **注意**：引擎 getVar 的 gameState 已改稳健判断（玩家有领土/兵力即视为对局），不再依赖会变的 gameState 名，所以那处不用每次重推。a48 门控（state===2）曾试过但**会卡住开场自动化，已废弃**——别再用。
 
