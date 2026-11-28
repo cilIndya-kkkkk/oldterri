@@ -62,6 +62,7 @@ const rawChecks = [
   ['bD.h7.jQ', 'SupportMath.supportAmount'],
   ['bD.h7.sT', 'SupportMath.supportCalc'],
   ['bF.a6M', 'UI controller.setHidden'],
+  ['aE.a48', 'gameState'],
   ['aE.fV', 'playerId'],
   ['ah.hn', 'playerBalances'],
   ['ah.hZ', 'playerTerritories'],
