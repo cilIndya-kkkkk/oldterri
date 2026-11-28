@@ -52,6 +52,15 @@ try {
 const windowAEGetter =
   `if(typeof Object.defineProperty==="function"){try{Object.defineProperty(window,"aE",{get:function(){return typeof aE!=="undefined"?aE:null;},configurable:true});Object.defineProperty(window,"ah",{get:function(){return typeof ah!=="undefined"?ah:null;},configurable:true});}catch(__ge){}}`;
 
+// Diagnostic tracer for the native 16-box captcha. No-op unless ?debug=1, so it
+// costs nothing during normal play (and new devices stay quiet). Each point logs
+// one state transition, letting the console-less iOS 12 device report exactly
+// where the verification chain stops via the debug overlay.
+const verifyLog =
+  `(function(){var d=false;try{d=!!(window.location&&window.location.search&&/[?&]debug=1/.test(window.location.search));}catch(e){}\n` +
+  `window.__fxvlog=function(msg){if(d&&window.console&&window.console.log){try{window.console.log("[fx16] "+msg);}catch(e){}}};\n` +
+  `})();`;
+
 // Build-time guards: if the game is re-obfuscated (a new release), these raw
 // access strings / anchors move and the injected blocks would silently no-op.
 // Fail the build loudly instead.
@@ -117,7 +126,7 @@ const patches = [
   // Mirror the game's console logs to an on-screen box (for the console-less
   // iOS 12 device), and load the automation engine. Prepended before the game's
   // IIFE so window.__fx exists before the in-game block runs.
-  ['"use strict";    (function () {', consoleMirror + engineBundle + controlBundle + openingControlBundle + strategiesData + '"use strict";    (function () {'],
+  ['"use strict";    (function () {', verifyLog + consoleMirror + engineBundle + controlBundle + openingControlBundle + strategiesData + '"use strict";    (function () {'],
   // Inject the in-game automation bindings at the start of `function dN` (the
   // mouse/input action manager constructor), exposing the game internals. The
   // window.aE getter lets the engine's getVar("gameState") work (IIFE not stripped).
@@ -138,7 +147,37 @@ const patches = [
   // We use the native 16-box now, so keep Cloudflare's Turnstile from loading at
   // all (it hangs on iOS 12 and even shows on newer devices). Making the guard
   // always-true makes `dv()` return early before injecting the Cloudflare script.
-  ['this.dv=function(){if(m.e8||(!m.aA&&!m.eG)){', 'this.dv=function(){if(true){']
+  ['this.dv=function(){if(m.e8||(!m.aA&&!m.eG)){', 'this.dv=function(){if(true){'],
+
+  // --- 16-box captcha: iOS 12 compatibility + diagnostics ---
+  // `inset:0` (CSS shorthand) only landed in Safari 14.1. iOS 12 ignores it, so
+  // the fixed-position overlay keeps its static position *after* the full-screen
+  // canvas and renders off-screen. Explicit offsets restore the full-screen box.
+  ['return ".captcha-overlay{position:fixed;inset:0;z-index:5;',
+   'return ".captcha-overlay{position:fixed;top:0;left:0;right:0;bottom:0;inset:0;z-index:5;'],
+  ['".captcha-overlay button{appearance:none;margin:0;',
+   '".captcha-overlay button{-webkit-appearance:none;appearance:none;margin:0;'],
+
+  // Trace each step of the 16-box chain (all no-op unless ?debug=1):
+  // init -> request -> server packet -> payload -> popup -> overlay -> layout.
+  ['this.dv=function(){a1.a2.eh();this.turnstile.dv();};',
+   'this.dv=function(){window.__fxvlog("bX.dv: turnstile disabled, 16box path");a1.a2.eh();this.turnstile.dv();};'],
+  ['var ej=1000*12;this.show=function(ek){if(ek){return false;}if(bX.ei()){return false;}if(a1.id===0){return bX.ee.show();}',
+   'var ej=1000*12;this.show=function(ek){window.__fxvlog("ed.show ek="+ek+" ei="+bX.ei()+" platform="+a1.id);if(ek){return false;}if(bX.ei()){return false;}if(a1.id===0){return bX.ee.show();}'],
+  ['if(!b1.z.er(0)){ej=bi.el+1000*1;return;}b1.es.et(5);};',
+   'if(!b1.z.er(0)){ej=bi.el+1000*1;return;}window.__fxvlog("ef.eq: socket open, requesting 16box (et 5)");b1.es.et(5);};'],
+  ['this.eu=function(ev){eo=ev;};',
+   'this.eu=function(ev){window.__fxvlog("ef.eu: challenge payload id="+ev.id+" colors="+ev.colors.length+" exLen="+ev.ex.length);eo=ev;};'],
+  ['this.show=function(){if(!eo){return false;}if(bi.el<ep){return false;}ep=bi.el+60*1000;(new ew()).show(eo.ex,eo.colors,eo.id);eo=null;return true;};',
+   'this.show=function(){window.__fxvlog("ef.show called (hasPayload="+!!eo+" cooldownLeft="+Math.floor(ep-bi.el)+")");if(!eo){return false;}if(bi.el<ep){return false;}ep=bi.el+60*1000;window.__fxvlog("ef.show: opening message popup");(new ew()).show(eo.ex,eo.colors,eo.id);eo=null;return true;};'],
+  ['bx.show(adK,ou,od,pow);',
+   'window.__fxvlog("aco: captcha packet received (17 images, od="+od+")");bx.show(adK,ou,od,pow);'],
+  ['this.show=function(ot,ou,od,pow){this.od=od;this.pow=pow;om=ou;if(!oe){ov();}',
+   'this.show=function(ot,ou,od,pow){window.__fxvlog("dp.show: received "+ot.length+" images");this.od=od;this.pow=pow;om=ou;if(!oe){ov();}'],
+  ['function ov(){op=document.activeElement;oe=oz(S[0],document.body,"captcha-overlay");',
+   'function ov(){window.__fxvlog("ov: building 16box overlay");op=document.activeElement;oe=oz(S[0],document.body,"captcha-overlay");'],
+  ['oe.style.setProperty("--tile",size+"px");};',
+   'oe.style.setProperty("--tile",size+"px");var __r=oe.getBoundingClientRect();window.__fxvlog("resize tile="+size+" vp="+window.innerWidth+"x"+window.innerHeight+" rect="+__r.top+","+__r.left+","+__r.width+","+__r.height);};']
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
