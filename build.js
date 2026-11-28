@@ -176,8 +176,10 @@ const patches = [
    'this.show=function(ot,ou,od,pow){window.__fxvlog("dp.show: received "+ot.length+" images");this.od=od;this.pow=pow;om=ou;if(!oe){ov();}'],
   ['function ov(){op=document.activeElement;oe=oz(S[0],document.body,"captcha-overlay");',
    'function ov(){window.__fxvlog("ov: building 16box overlay");op=document.activeElement;oe=oz(S[0],document.body,"captcha-overlay");'],
+  // Also pin the geometry with inline styles (px, no CSS variables/shorthands),
+  // so a stylesheet parsing quirk on iOS 12 cannot push the overlay off-screen.
   ['oe.style.setProperty("--tile",size+"px");};',
-   'oe.style.setProperty("--tile",size+"px");var __r=oe.getBoundingClientRect();window.__fxvlog("resize tile="+size+" vp="+window.innerWidth+"x"+window.innerHeight+" rect="+__r.top+","+__r.left+","+__r.width+","+__r.height);};']
+   'oe.style.setProperty("--tile",size+"px");oe.style.position="fixed";oe.style.top="0";oe.style.left="0";oe.style.right="0";oe.style.bottom="0";oe.style.width="100%";oe.style.height="100%";oe.style.zIndex="999999";if(og){og.style.gridTemplateColumns="repeat(4,"+size+"px)";}if(oh){oh.style.width=size+"px";oh.style.height=size+"px";if(oh.parentNode){oh.parentNode.style.width=(4*size)+"px";oh.parentNode.style.height=size+"px";}}for(var __i=0;__i<ok.length;__i++){ok[__i].style.width=size+"px";ok[__i].style.height=size+"px";}var __r=oe.getBoundingClientRect();window.__fxvlog("resize tile="+size+" vp="+window.innerWidth+"x"+window.innerHeight+" rect="+__r.top+","+__r.left+","+__r.width+","+__r.height);};']
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
