@@ -27,8 +27,16 @@
 - 相关构建脚本（dev-side，`/usr/tmp` 可能被清，需时可重建）：`/data/data/com.termux/files/usr/tmp/opencode/autobuild/`（stub_settings.js、stub_gameInterface.js、entry.js、build_engine.mjs 用 esbuild 打引擎；extract_injection.mjs 从 goodclient 补丁提取注入A）。
 - **注意**：引擎 getVar 的 gameState 已改稳健判断（玩家有领土/兵力即视为对局），不再依赖会变的 gameState 名，所以那处不用每次重推。a48 门控（state===2）曾试过但**会卡住开场自动化，已废弃**——别再用。
 
-### A. Farm 打不了人机（单机）—— targeting bug（未修）
+### A. Farm 打不了人机（单机）—— 28 Nov 已找到并修复根因（待真机确认）
 - 现象：单机（人机）时，Farm 清野模式定位不到人机来打。
+- **根因**：`injectionA.js` 里一批 22 Nov 的字段名在 26 Nov 改名后没跟上（手工适配漏掉，token 对齐工具当时没覆盖这些 hook）：
+  - `aE.l4`（其实是攻击系数数组，不是人数）→ `aE.l9`（humanCount）
+  - `aE.a14`（已不存在）→ `aE.a19`（lobby max join）
+  - `aE.ie`（是个函数，被当布尔用）→ `aE.il`（isTeamGame）
+  - `game.oA`→`game.oF`（uiHidden）、`game.iA`→`game.iB`（selectableSpawn）、`ah.a4j`→`ah.a4x`（rawPlayerNames）
+  - 后果：`Number(aE.l4)` = NaN → `findV20ReserveBotAttackTarget` / `findSimpleBestBotAttackTarget` 等**一进门就 return -1**，所有 bot 定位全废。这比阈值问题更根本。
+- 已全部替换；并把 6 个 hook 加进 `update/hooks.json`，下次更新工具会从 22nov→26nov 正确派生出 `l9/a19/il/oF/iB/a4x`（已验证 votes 62/9/32/18/32/11）。
+- `ah.go` 仍存在但 goodclient 源码已注明是旧 build 的名字、只在未接线的兜底函数里，忽略即可。
 - 已查：`findV20ReserveBotAttackTarget`（默认 v20reserve 模式）有一堆阈值门槛，单机早期自己兵少、人机地小，容易被挡：
   - `var sendTroops = ownTroops * 0.11; if (sendTroops < 200) return -1;`
   - `var minLand = Math.max(300, ownLand*0.005); if (land < minLand) continue;`

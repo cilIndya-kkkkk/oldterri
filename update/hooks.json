@@ -45,6 +45,12 @@
     "s.playerTerritories": { "path": "ah.hZ", "component": 1 },
     "s.gIsReplay": { "path": "aE.hu", "component": 1 },
     "s.gameState": { "path": "aE.a48", "component": 1 },
+    "g.gHumans": { "path": "aE.l9", "component": 1 },
+    "g.gLobbyMaxJoin": { "path": "aE.a19", "component": 1 },
+    "g.gIsTeamGame": { "path": "aE.il", "component": 1 },
+    "g.uiHidden": { "path": "aE.oF", "component": 1 },
+    "g.gSelectableSpawn": { "path": "aE.iB", "component": 1 },
+    "s.rawPlayerNames": { "path": "ah.a4x", "component": 1 },
     "t.tickCounter": { "path": "a4N.an9", "component": 1 }
   }
 }

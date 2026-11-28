@@ -1,7 +1,7 @@
 __fx.gameUi = __fx.gameUi || {
   isHidden: function() {
     var game = typeof aE !== "undefined" ? aE : null;
-    return Boolean(game && game.oA === true);
+    return Boolean(game && game.oF === true);
   },
   setHidden: function(value) {
     var hidden = Boolean(value);
@@ -11,8 +11,8 @@ __fx.gameUi = __fx.gameUi || {
     } catch (_error) {
     }
     var game = typeof aE !== "undefined" ? aE : null;
-    if (game && game.oA !== hidden) {
-      game.oA = hidden;
+    if (game && game.oF !== hidden) {
+      game.oF = hidden;
       try {
         if (typeof hE !== "undefined" && hE && typeof hE.resize === "function") hE.resize();
       } catch (_error) {
@@ -25,11 +25,11 @@ __fx.gameUi = __fx.gameUi || {
   },
   isSpawnSelection: function() {
     var game = typeof aE !== "undefined" ? aE : null;
-    return Boolean(game && game.iA === true);
+    return Boolean(game && game.iB === true);
   }
 };
 var __fxAd = typeof ad !== "undefined" ? ad : void 0;
-var __fxTargetStart = (humans) => aE.ie ? 0 : humans;
+var __fxTargetStart = (humans) => aE.il ? 0 : humans;
 __fx.openingAutomation.attack = () => __fx.openingAutomation.attackFreeLand();
 var __fxNeutralBorderTileCount = () => {
   var _a;
@@ -61,8 +61,8 @@ __fx.openingAutomation.findBorderBotAttackTarget = () => {
   if (!borderTiles || !borderTiles.length) return -1;
   var offsets = __fxAd == null ? void 0 : __fxAd.fn;
   if (!offsets || typeof __fxAd.hL !== "function" || typeof __fxAd.fd !== "function") return -1;
-  var humans = aE.l4;
-  var maxPlayers = aE.a14 || 512;
+  var humans = aE.l9;
+  var maxPlayers = aE.a19 || 512;
   var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
   var lastTick = __fx.openingAutomation.lastTick;
   var seen = /* @__PURE__ */ new Set();
@@ -95,8 +95,8 @@ __fx.openingAutomation.findV20ReserveBotAttackTarget = (tick, attackPercent) => 
   if (!borderTiles || !borderTiles.length) return -1;
   var offsets = __fxAd == null ? void 0 : __fxAd.fn;
   if (!offsets || typeof __fxAd.hL !== "function" || typeof __fxAd.fd !== "function") return -1;
-  var humans = Number(aE.l4);
-  var maxPlayers = aE.a14 || 512;
+  var humans = Number(aE.l9);
+  var maxPlayers = aE.a19 || 512;
   if (!isFinite(humans) || humans < 1) return -1;
   var ownTroops = ah.hn[player] || 0;
   var ownLand = ah.hZ[player] || 0;
@@ -185,7 +185,7 @@ __fx.openingAutomation.attackFreeLandWithPercent = (percent) => {
   return false;
 };
 var __fxCanAttack = (attacker, target) => {
-  if (!aE.ie) return true;
+  if (!aE.il) return true;
   if (typeof bw !== "undefined" && typeof bw.fe === "function") {
     return bw.fe(attacker, target);
   }
@@ -204,8 +204,8 @@ var __fxTileNeutral = (tile) => false;
 __fx.openingAutomation.attackPlayer = (target) => {
   var _a, _b;
   if (aE.hu) return false;
-  var humans = Number(aE.l4);
-  var maxPlayers = aE.a14 || 512;
+  var humans = Number(aE.l9);
+  var maxPlayers = aE.a19 || 512;
   if (!isFinite(humans) || humans < 1) return false;
   if (target < __fxTargetStart(humans) || target >= maxPlayers) return false;
   var targetLand = ah.hZ[target];
@@ -224,10 +224,10 @@ __fx.openingAutomation.attackPlayer = (target) => {
 };
 var __fxCanSupportTarget = (target) => {
   if (aE.hu) return false;
-  if (!aE.ie) return false;
+  if (!aE.il) return false;
   var player = aE.fV;
   target = Number(target);
-  var maxPlayers = aE.a14 || 512;
+  var maxPlayers = aE.a19 || 512;
   if (!isFinite(target) || target < 0 || target >= maxPlayers || target === player) return false;
   if ((ah.hZ[target] || 0) <= 0) return false;
   if (typeof bw === "undefined" || typeof bw.fe !== "function") return false;
@@ -263,7 +263,7 @@ __fx.openingAutomation.canAttackTarget = (target) => {
   if (aE.hu) return false;
   target = Number(target);
   var player = aE.fV;
-  var maxPlayers = aE.a14 || 512;
+  var maxPlayers = aE.a19 || 512;
   if (!isFinite(target) || target < 0 || target >= maxPlayers || target === player) return false;
   if ((ah.hZ[target] || 0) <= 0) return false;
   return __fxCanAttack(player, target);
@@ -319,7 +319,7 @@ __fx.botMap.launchShipAt = function(clientX, clientY, percent) {
 };
 __fx.openingAutomation.cancelPlayerAttack = (target) => {
   if (aE.hu) return false;
-  if (target < 0 || target >= aE.a14) return false;
+  if (target < 0 || target >= aE.a19) return false;
   if (typeof bB !== "undefined" && bB.iD && typeof bB.iD.sI === "function") {
     bB.iD.sI(target);
     return true;
@@ -339,7 +339,7 @@ __fx.openingAutomation.getTargetLand = (target) => ah.hZ[target];
 __fx.openingAutomation.getTargetTroops = (target) => ah.hn[target];
 __fx.openingAutomation.getBotAttackSnapshot = (target) => {
   var _a, _b;
-  if (target < aE.l4 || target >= aE.a14) return null;
+  if (target < aE.l9 || target >= aE.a19) return null;
   var targetLand = ah.hZ[target];
   if (targetLand <= 0) return null;
   var targetTroops = ah.hn[target];
@@ -348,7 +348,7 @@ __fx.openingAutomation.getBotAttackSnapshot = (target) => {
   var playerTroops = ah.hn[aE.fV];
   return {
     target,
-    targetName: ah.a4j[target],
+    targetName: ah.a4x[target],
     targetLand,
     targetTroops,
     targetDensity: Number(targetDensity.toFixed(4)),
@@ -359,7 +359,7 @@ __fx.openingAutomation.getBotAttackSnapshot = (target) => {
 };
 __fx.openingAutomation.isLiveLowDensityBotTarget = (target, mode, reserved) => {
   var _a;
-  if (target < aE.l4 || target >= aE.a14) return false;
+  if (target < aE.l9 || target >= aE.a19) return false;
   var land = ah.hZ[target];
   if (land <= 0) return false;
   if (!__fxBorders(target, aE.fV) || !__fxCanAttack(aE.fV, target)) return false;
@@ -386,7 +386,7 @@ __fx.openingAutomation.isLiveLowDensityBotTarget = (target, mode, reserved) => {
 };
 __fx.openingAutomation.findLowDensityBorderingBots = (limit, mode) => {
   var targets = [];
-  for (var id = __fxTargetStart(aE.l4); id < aE.a14; id++) {
+  for (var id = __fxTargetStart(aE.l9); id < aE.a19; id++) {
     if (ah.hZ[id] <= 0) continue;
     if (id === aE.fV || !__fxBorders(id, aE.fV) || !__fxCanAttack(aE.fV, id)) continue;
     var density = ah.hn[id] / (ah.hZ[id] * 150);
@@ -406,7 +406,7 @@ __fx.openingAutomation.updateSafeBotDensityTracker = () => {
   __fx.openingAutomation.safeBotDensityTrackerLastUpdate = now;
   var tracker = (_a = __fx.openingAutomation).safeBotDensityTracker || (_a.safeBotDensityTracker = /* @__PURE__ */ new Map());
   var seen = /* @__PURE__ */ new Set();
-  for (var id = __fxTargetStart(aE.l4); id < aE.a14; id++) {
+  for (var id = __fxTargetStart(aE.l9); id < aE.a19; id++) {
     var land = ah.hZ[id];
     if (land <= 0) continue;
     var record = tracker.get(id) || {};
@@ -448,7 +448,7 @@ __fx.openingAutomation.inferBotAttackTarget = (botId) => {
       var neighbor = tile + offsets[offsetIndex];
       if (__fxTileNeutral(neighbor) || !__fxTileOwned(neighbor)) continue;
       var owner = __fxTileOwner(neighbor);
-      if (owner === botId || owner < aE.l4 || owner >= aE.a14) continue;
+      if (owner === botId || owner < aE.l9 || owner >= aE.a19) continue;
       var record = tracker.get(owner);
       if (!record || !isFinite(record.landDelta) || record.landDelta >= 0) continue;
       var land = ah.hZ[owner];
@@ -478,7 +478,7 @@ __fx.openingAutomation.getBotExposure = (botId) => {
       if (owner === botId) continue;
       if (owner === playerId) {
         playerEdges++;
-      } else if (owner >= aE.l4 && owner < aE.a14 && ah.hZ[owner] > 0) {
+      } else if (owner >= aE.l9 && owner < aE.a19 && ah.hZ[owner] > 0) {
         botNeighbors.add(owner);
         botEdges++;
       }
@@ -512,7 +512,7 @@ __fx.openingAutomation.findWeakEncapsulatedBot = (attackPercent, mode) => {
   var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
   var best = null;
   var bestScore = -1;
-  for (var id = __fxTargetStart(aE.l4); id < aE.a14; id++) {
+  for (var id = __fxTargetStart(aE.l9); id < aE.a19; id++) {
     var land = ah.hZ[id];
     if (land < 120 || land > Math.max(2400, ownLand * 0.1)) continue;
     if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
@@ -570,7 +570,7 @@ __fx.openingAutomation.findBestDynamicBotAttackTarget = (tick, options) => {
   var bestScore = -1;
   var fallbackBest = null;
   var fallbackBestScore = -1;
-  for (var id = __fxTargetStart(aE.l4); id < aE.a14; id++) {
+  for (var id = __fxTargetStart(aE.l9); id < aE.a19; id++) {
     var land = ah.hZ[id];
     if (land < minLand) continue;
     if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
@@ -680,8 +680,8 @@ __fx.openingAutomation.findMessiahBotAttackTarget = (tick) => {
   if (!borderTiles || !borderTiles.length) return null;
   var offsets = __fxAd == null ? void 0 : __fxAd.fn;
   if (!offsets || typeof __fxAd.hL !== "function" || typeof __fxAd.fd !== "function") return null;
-  var humans = Number(aE.l4);
-  var maxPlayers = aE.a14 || 512;
+  var humans = Number(aE.l9);
+  var maxPlayers = aE.a19 || 512;
   if (!isFinite(humans) || humans < 1) return null;
   var ownTroops = ah.hn[player] || 0;
   var ownLand = ah.hZ[player] || 0;
@@ -767,7 +767,7 @@ __fx.openingAutomation.findThighClientBotAttackTarget = (tick) => {
   var tracker = (_a = __fx.openingAutomation).safeBotDensityTracker || (_a.safeBotDensityTracker = /* @__PURE__ */ new Map());
   var best = null;
   var bestScore = -1;
-  for (var id = __fxTargetStart(aE.l4); id < aE.a14; id++) {
+  for (var id = __fxTargetStart(aE.l9); id < aE.a19; id++) {
     var land = ah.hZ[id];
     if (land <= 0 || land < minLand) continue;
     if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
@@ -824,8 +824,8 @@ __fx.openingAutomation.findThighClientBotAttackTarget = (tick) => {
 };
 __fx.openingAutomation.findSimpleBestBotAttackTarget = (tick) => {
   var playerId = aE.fV;
-  var humans = Number(aE.l4);
-  var maxPlayers = aE.a14 || 512;
+  var humans = Number(aE.l9);
+  var maxPlayers = aE.a19 || 512;
   if (!isFinite(humans) || humans < 1) return -1;
   var recentTargets = __fx.openingAutomation.autoAttackRecentTargets;
   var best = -1;
@@ -891,7 +891,7 @@ __fx.openingAutomation.findFullsendEncapsulatedBot = (attackPercent, mode) => {
   };
   var best = -1, bestScore = -1;
   var bestInfo = null;
-  for (var id = __fxTargetStart(aE.l4); id < aE.a14; id++) {
+  for (var id = __fxTargetStart(aE.l9); id < aE.a19; id++) {
     var land = ah.hZ[id];
     if (land <= 0) continue;
     if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
@@ -966,7 +966,7 @@ __fx.openingAutomation.findBestLowDensityBorderingBot = (cycleProgress, mode, at
   };
   var best = -1, bestScore = -1;
   var bestInfo = null;
-  for (var id = __fxTargetStart(aE.l4); id < aE.a14; id++) {
+  for (var id = __fxTargetStart(aE.l9); id < aE.a19; id++) {
     var land = ah.hZ[id];
     if (land <= 0) continue;
     if (id === playerId || !__fxBorders(id, playerId) || !__fxCanAttack(playerId, id)) continue;
