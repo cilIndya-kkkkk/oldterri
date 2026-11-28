@@ -29,6 +29,7 @@
 ### B. 16 框验证码旧设备弹不出来（28 Nov 已修一处 + 加了诊断，**待真机确认**）
 - 现象：iOS 12 旧设备上 16 框验证码弹不出来，进大厅后没验证 UI，被踢。**新设备正常**。
 - **28 Nov 进展（本次）**：找到高度可疑的根因——16 框浮层的 CSS 是 `.captcha-overlay{position:fixed;inset:0;...}`，`inset` 简写 Safari 14.1 才支持，iOS 12 直接忽略。浮层是 append 到 body、排在全屏 canvas 之后，没有 offset 就停在静态位置（屏幕外），所以"触发了但看不见"。`build.js` 已补 `top:0;left:0;right:0;bottom:0`（保留 inset 给新设备），并给按钮补 `-webkit-appearance:none`。
+- **双保险**：除改 CSS 字符串外，`dp.resize()` 里还给浮层写了纯 inline 的 px 几何（`position:fixed;top/left/right/bottom:0;width/height:100%;z-index:999999`，grid 列和 16 个 tile 也都用 px 写死），不依赖 CSS 简写/变量；`resize` 每次都会重算。
 - **诊断链**：`build.js` 加了 `__fxvlog()`（仅 `?debug=1` 生效，平时完全 no-op），在 8 个关键点打点：`bX.dv → ed.show → ef.eq(et 5 请求) → aco(服务端下发 17 张图) → dp.show → ov → ef.show → ef.eu`。`resize` 里还会打印浮层 `getBoundingClientRect()` 和 viewport 尺寸，可直接确认是否还在屏幕外。旧设备开 `?debug=1` 看日志停在哪一步；**诊断完记得关 debug**（会掉帧）。
 - 验证：已 `node build.js` + `node --check docs/latest.js`；产物已 push 部署。
 - 已排除：
