@@ -5,6 +5,42 @@
 
 ---
 
+## ★ 待办交接（下个对话接手）
+
+> 以下三件事都**未完成**。已附上目前发现和方向，避免重复踩坑。建议顺序：**C → A → B**。
+
+### C. 给 oldterri 加自动更新工具（未做）
+- 现状：oldterri **没有**自动更新工具，只有本文档。`~/goodupdate`、`~/srez_update` 是给 goodclient/srez 的，未适配 oldterri。
+- 已验证可用：`~/goodupdate/derive_hooks.py`（token 对齐）能解混淆名。26 Nov 适配时它抓出我手工漏掉的 **4 处**（sendSupport=s2、supportAmount=jQ、supportCalc=sT、setUiHidden=a6M）。**凡是改名的更新，必须用它交叉验证。**
+- 方向：搭 oldterri 的更新流程。难点是"新名怎么写回 injectionA.js/build.js"——名以各种访问形式出现（`bB.iD.iK` 直接路径、`support.jL`/`controller.a68` 经变量访问），不是简单键值。做法：跑 derive_hooks.py 得新旧名对照 → 按访问形式替换 injectionA.js + 更新 build.js 的 rawChecks 和注入锚点。
+- 相关构建脚本（dev-side，`/usr/tmp` 可能被清，需时可重建）：`/data/data/com.termux/files/usr/tmp/opencode/autobuild/`（stub_settings.js、stub_gameInterface.js、entry.js、build_engine.mjs 用 esbuild 打引擎；extract_injection.mjs 从 goodclient 补丁提取注入A）。
+- **注意**：引擎 getVar 的 gameState 已改稳健判断（玩家有领土/兵力即视为对局），不再依赖会变的 gameState 名，所以那处不用每次重推。a48 门控（state===2）曾试过但**会卡住开场自动化，已废弃**——别再用。
+
+### A. Farm 打不了人机（单机）—— targeting bug（未修）
+- 现象：单机（人机）时，Farm 清野模式定位不到人机来打。
+- 已查：`findV20ReserveBotAttackTarget`（默认 v20reserve 模式）有一堆阈值门槛，单机早期自己兵少、人机地小，容易被挡：
+  - `var sendTroops = ownTroops * 0.11; if (sendTroops < 200) return -1;`
+  - `var minLand = Math.max(300, ownLand*0.005); if (land < minLand) continue;`
+  - 还有 `breakeven` 成本、`activeTargets`/`recentTargets` 冷却等。
+- 位置：goodclient `patches/gc_openingAutomation.js`（约 201-254 行）→ oldterri `automation/full/injectionA.js`（转译后的同名方法）。引擎调这些 find* 方法。
+- 方向：放宽阈值（降 sendTroops<200、minLand）或调单机下的参数。**需设备实测确认，不能盲改。**
+- 也检查 `canAttack`（`bw.fe`）在单机下对 bot 是否返回 true（若返回 false 会跳过所有 bot）。
+
+### B. 16 框验证码旧设备弹不出来（关键，未解决）
+- 现象：iOS 12 旧设备上 16 框验证码弹不出来，进大厅后没验证 UI，被踢。**新设备正常**。
+- 已排除：
+  - debug 框（已改为 `?debug=1` 才开，非元凶）。
+  - 无报错（debug 框无错误，说明不是代码崩）。
+  - 16 框技术栈 iOS 12 兼容（canvas 2d、typed array、CSS 变量都支持；无 WebGL）。
+- 已确认：`ei()=0` 强制走 16 框的补丁生效（新设备能弹，逻辑对）。
+- 方向（复杂，用户知道且要求做）：
+  1. 修 iOS 12 上 16 框的渲染/触发（需定位是"没触发"还是"触发了没渲染"）。
+  2. 或真 token 中转（现代设备取 Turnstile token 传给旧设备，token 有时效，需实时）。
+- 诊断手段：旧设备没 console，靠 debug 框。给旧设备 URL 加 `?debug=1`，看有没有验证相关日志（turnstile/验证码相关），判断到哪一步。**注意 debug 框在 `?debug=1` 时是开的，会掉帧，诊断完记得关。**
+- 兜底：如果 16 框和 Turnstile 在 iOS 12 都无解，可能得走"真 token 中转"或"16 框自动解（OCR，用户之前抵触）"。
+
+---
+
 ## 0. 关键事实
 
 - 部署：GitHub Pages 从 `/docs` 部署 → `https://cilindya-kkkkk.github.io/oldterri/`
