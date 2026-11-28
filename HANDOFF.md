@@ -160,7 +160,7 @@ python3 ~/goodupdate/derive_hooks.py \
 
 ## 5. 已知问题 / 待办
 
-- **控制 UI 是否在 iOS 12 上正常显示/交互**：未在真机验证。游戏会删 body 的 DIV/INPUT/BUTTON，control 用 setInterval 重挂。
+- **控制 UI 是否在 iOS 12 上正常显示/交互**：未在真机验证。游戏会删 body 的 DIV/INPUT/BUTTON，control 用 setInterval 重挂。右下角 `fxAutoControls`（Farm/Opening/Inf 整块）28 Nov 起也改成可触摸拖动（与 `fxOpeningSetupBtn` 同款 touch 事件 + `__moved` 抑制误触 + localStorage `fx_controls_pos` 持久化），位置每 500ms 重挂后仍保留。
 - **16 框验证**：需确认在最新游戏上仍能弹出并完成。
 - **automation 在新版上能否跑**：26 Nov 适配已部署，但**尚未在设备上验证自动化实际攻防**。这是最大的未知。
 - **gameState 稳健判断**：基于"玩家有领土/兵力"。若某局玩家 0 领土开局有延迟，开场自动化可能晚几 tick。需真机确认。
